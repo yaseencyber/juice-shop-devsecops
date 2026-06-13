@@ -1,0 +1,30 @@
+name: Container Security Scan
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  image-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone OWASP Juice Shop
+        run: git clone https://github.com/juice-shop/juice-shop.git
+
+      - name: Build Docker Image
+        run: docker build -t juice-shop-image ./juice-shop
+
+      - name: Scan Docker Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: juice-shop-image
+          format: json
+          output: trivy-image-report.json
+
+      - name: Upload Trivy Image Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-image-report
+          path: trivy-image-report.json
