@@ -13,13 +13,29 @@ jobs:
       - name: Clone OWASP Juice Shop
         run: git clone https://github.com/juice-shop/juice-shop.git
 
+      - name: Install Semgrep
+        run: pip install semgrep
+
       - name: Run Semgrep SAST
         run: |
-          python -m pip install semgrep
-          semgrep --config=auto juice-shop
+          semgrep --config=auto juice-shop --json -o semgrep-report.json
 
       - name: Run Trivy SCA
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
           scan-ref: juice-shop
+          format: json
+          output: trivy-report.json
+
+      - name: Upload Semgrep Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.json
+
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.json
